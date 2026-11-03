@@ -1,0 +1,20 @@
+{
+ "cell": [
+  224,
+  176
+ ],
+ "frames": [
+  "walk1",
+  "walk2",
+  "walk3",
+  "walk4",
+  "sit",
+  "sleep"
+ ],
+ "cats": [
+  "ginger",
+  "black",
+  "grey",
+  "calico"
+ ]
+}

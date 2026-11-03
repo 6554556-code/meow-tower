@@ -1,0 +1,1219 @@
+/* ============ ЦВЕТА И ОБЩЕЕ ============ */
+:root {
+  --night: #1b1838;      /* фон вокруг игры на широком экране */
+  --plate: #262052;      /* тёмные плашки: валюты, подписи этажей */
+  --plate-edge: #14102e;
+  --pillar: #5b6178;     /* боковые колонны башни */
+  --pillar-light: #8a90a8;
+  --teal: #2cc3c6;       /* кнопка стройки */
+  --teal-dark: #0e5f6b;
+  --text: #ffffff;
+  --pixel-font: 'Press Start 2P', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--night);
+  font-family: var(--pixel-font);
+  color: var(--text);
+}
+
+/* Вся игра — колонка шириной с телефон, по центру экрана */
+.game {
+  max-width: 480px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: #2a9ffd;        /* цвет неба с верха картинки — продолжает фон вверх */
+  position: relative;
+  overflow: clip;        /* обрезаем лишнее, но не ломаем «липкие» панели (hidden ломал) */
+}
+
+/* ============ ВЕРХНЯЯ ПАНЕЛЬ ============ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 96px;
+  padding: 4px 10px 4px 6px;
+  background: var(--plate);
+  border: 2px solid var(--plate-edge);
+  border-radius: 8px;
+  font-size: 12px;
+  justify-content: space-between;
+}
+.pill img { height: 22px; }
+
+/* ============ СЦЕНА ============ */
+.scene {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;   /* башня «стоит» на земле внизу */
+  padding-top: 8px;
+  /* Город: картинка во всю ширину, прижата к низу */
+  background: url('assets/bg/city.png') center bottom / 100% auto no-repeat;
+  /* Поднимаем башню на тротуар: 157px из 941 по ширине картинки = 16.7%.
+     Проценты в padding считаются от ширины — поэтому башня
+     всегда попадает на тротуар, какой бы ни был экран */
+  padding-bottom: 16.7%;
+}
+
+/* ============ ЗДАНИЕ: сетка 2×2 ============
+   [шестерёнка] [вывеска]
+   [шахта     ] [башня  ]
+   Шахта автоматически вытягивается на высоту башни */
+.building {
+  display: grid;
+  grid-template-columns: 18% 1fr;
+  width: min(740px, calc(100% - 16px));
+  margin: 0 auto;
+}
+
+/* Верхушка лифта с шестерёнкой — шире шахты, свисает по бокам */
+.lift-top {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  display: block;
+  width: 126.5%;
+  margin-left: -13.25%;
+  position: relative;
+  z-index: 3;
+}
+
+/* Вывеска «Мяу Башня» */
+.sign {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: end;
+  justify-self: center;
+  position: relative;
+  z-index: 1;                  /* позади сада: дерево растёт перед вывеской */
+  display: block;
+  width: 80%;
+  max-width: 450px;
+  margin-bottom: -4px;         /* чуть наезжает на крышу */
+}
+
+/* ============ ШАХТА ЛИФТА ============ */
+.shaft {
+  grid-column: 1;
+  grid-row: 2;
+  position: relative;
+  z-index: 2;
+  background: url('assets/ui/lift_shaft.png') repeat-y;
+  background-size: 100% auto;  /* кусок шахты повторяется сверху вниз */
+}
+
+/* Номер этажа в шахте — кнопка */
+.lift-num {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  transform: translateY(50%);  /* центр кнопки — на середине этажа */
+  font-family: var(--pixel-font);
+  font-size: 14px;
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--plate-edge);
+  background: none;
+  border: none;
+  padding: 6px 0;
+  cursor: pointer;
+  z-index: 1;
+}
+.lift-num:hover:not(:disabled) { color: #ffd84a; }
+.lift-num:disabled { opacity: 0.35; cursor: default; }
+
+/* Кабинка: едет вверх-вниз, меняя bottom. Тап по ней — посадить гостя */
+.lift-cab {
+  position: absolute;
+  left: 15%;
+  bottom: 0;
+  width: 70%;
+  z-index: 2;
+  cursor: pointer;
+}
+.lift-cab img { display: block; width: 100%; pointer-events: none; }
+
+/* В лобби ждут гости — кабинка подсвечивается: «тапни меня» */
+.lift-cab.ready { animation: cab-ready 1s ease-in-out infinite; }
+@keyframes cab-ready {
+  0%, 100% { filter: drop-shadow(0 0 0 #ffd84a); }
+  50%      { filter: drop-shadow(0 0 6px #ffd84a); }
+}
+
+/* Пассажир внутри кабинки */
+.cab-rider {
+  position: absolute;
+  left: 8%;
+  bottom: 6%;
+  width: 84%;
+  aspect-ratio: 224 / 176;
+  pointer-events: none;
+}
+.cab-rider .cat-sprite { background-position-x: 80%; }   /* сидит */
+
+/* Чаевые «+40 🪙» */
+.tip-pop {
+  position: absolute;
+  left: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  color: #ffd84a;
+  text-shadow: 2px 2px 0 var(--plate-edge);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: tip-float 1.3s ease-out forwards;
+}
+.tip-pop img { height: 14px; }
+@keyframes tip-float {
+  0%   { opacity: 0; transform: translate(-50%, 0); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -40px); }
+}
+
+/* ============ БАШНЯ ============ */
+.tower {
+  grid-column: 2;
+  grid-row: 2;
+  position: relative;
+  z-index: 2;
+}
+
+/* Колонны по бокам — у каждого этажа, а не у всей башни:
+   так сквозь сад на крыше видно небо */
+.floor-block {
+  border-left: 8px solid var(--pillar);
+  border-right: 8px solid var(--pillar);
+  box-shadow: inset 2px 0 0 var(--pillar-light), inset -2px 0 0 var(--pillar-light);
+  background: var(--plate-edge);
+}
+
+/* Сад на крыше: прозрачный фон, небо просвечивает */
+.roof-block img {
+  display: block;
+  width: 100%;
+  margin-bottom: -2px;         /* бортик садится прямо на верхний этаж */
+}
+
+/* Этаж: картинка на всю ширину башни.
+   Высота у нарезки гуляет на пару пикселей — выравниваем пропорцией. */
+.floor > img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 605 / 124;
+  object-fit: cover;
+}
+.floor.lobby > img { aspect-ratio: 605 / 184; }
+
+/* Этаж — «сцена» для котов: они позиционируются внутри него */
+.floor { position: relative; }
+
+/* Этаж на стройке: картинку прячем, рисуем полосатые леса */
+.floor.is-building { aspect-ratio: 605 / 124; }
+.floor.is-building > img { display: none; }
+.construct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(-45deg,
+      rgba(255, 205, 60, 0.35) 0 12px,
+      rgba(30, 26, 60, 0.35) 12px 24px),
+    #3a3560;
+}
+.construct-text {
+  padding: 6px 10px;
+  font-size: 12px;
+  background: var(--plate);
+  border: 2px solid var(--plate-edge);
+  border-radius: 6px;
+}
+
+/* ============ КОТЫ ============ */
+/* Внешняя коробка: отвечает за МЕСТО (left двигает view.js) */
+.cat {
+  position: absolute;
+  bottom: 4%;
+  width: 12%;                 /* размер кота — доля ширины этажа */
+  aspect-ratio: 224 / 176;    /* пропорции одной ячейки листа */
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Внутренняя: сам рисунок. Лист из 6 кадров:
+   0–3 ходьба, 4 сидит, 5 спит → каждый кадр сдвиг на 20% */
+.cat-sprite {
+  width: 100%;
+  height: 100%;
+  background-size: 600% 100%;
+  background-repeat: no-repeat;
+  background-position-x: 80%;   /* по умолчанию: сидит */
+}
+
+/* Поза */
+.cat[data-pose="walk"]  .cat-sprite { animation: cat-walk 0.6s steps(4) infinite; }
+.cat[data-pose="sit"]   .cat-sprite { background-position-x: 80%; }
+.cat[data-pose="sleep"] .cat-sprite { background-position-x: 100%; }
+
+/* Котик нарисован мордой вправо — идёт влево, отражаем зеркально */
+.cat[data-dir="left"] .cat-sprite { transform: scaleX(-1); }
+
+@keyframes cat-walk {
+  from { background-position-x: 0%; }
+  to   { background-position-x: 80%; }   /* steps(4) даст кадры 0, 1, 2, 3 */
+}
+
+/* ============ ГОСТИ ============ */
+/* Облачко «→ 4» над головой */
+.bubble {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 2px;
+  padding: 3px 5px;
+  font-size: 9px;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: var(--plate);
+  background: #fff;
+  border: 2px solid var(--plate);
+  border-radius: 6px;
+}
+.bubble.vip { background: #ffd84a; }
+
+/* Не тот этаж — облачко краснеет и трясётся */
+.bubble.wrong { animation: bubble-wrong 0.6s; }
+@keyframes bubble-wrong {
+  0%, 100% { transform: translateX(-50%); background: #fff; }
+  20%, 60% { transform: translateX(calc(-50% - 3px)); background: #ff6b6b; }
+  40%, 80% { transform: translateX(calc(-50% + 3px)); background: #ff6b6b; }
+}
+
+/* Гости в очереди стоят, переезжают по очереди плавно */
+.cat.guest { transition: left 0.4s; }
+
+/* Корона над VIP-жильцом */
+.crown {
+  position: absolute;
+  top: -12%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+}
+
+/* «z z Z» над спящим котом */
+.zzz {
+  display: none;
+  position: absolute;
+  right: 10%;
+  top: -10%;
+  font-size: 8px;
+  color: #e8e0ff;
+  text-shadow: 1px 1px 0 var(--plate);
+}
+.cat[data-dir="left"] .zzz { right: auto; left: 10%; }   /* у головы, куда бы ни смотрел */
+.cat[data-pose="sleep"] .zzz { display: block; }
+
+.zzz span {
+  position: absolute;
+  bottom: 0;
+  opacity: 0;
+  animation: zzz-float 2.4s infinite;
+}
+.zzz span:nth-child(2) { animation-delay: 0.8s; }
+.zzz span:nth-child(3) { animation-delay: 1.6s; font-size: 10px; }
+
+@keyframes zzz-float {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(10px, -18px); }
+}
+
+/* Подпись под этажом: «🐟 РЫБНОЕ КАФЕ ....... 3» */
+.floor-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  background: var(--plate);
+  border-top: 2px solid #4a4f75;
+  border-bottom: 2px solid var(--plate-edge);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ============ НИЖНЯЯ ПАНЕЛЬ ============ */
+.bottombar {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  padding: 10px;
+  background: rgba(27, 24, 56, 0.92);
+}
+
+.btn-build {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  font-family: var(--pixel-font);
+  color: var(--text);
+  background: linear-gradient(#4fe3e0, var(--teal));
+  border: 3px solid var(--teal-dark);
+  border-radius: 10px;
+  box-shadow: 0 4px 0 var(--teal-dark);
+  text-shadow: 2px 2px 0 var(--teal-dark);
+  cursor: pointer;
+}
+.btn-build:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--teal-dark); }
+.btn-build:disabled { filter: grayscale(0.7) brightness(0.8); cursor: default; }
+.btn-title { font-size: 11px; }
+
+/* Справа на кнопке: цена сверху, время снизу */
+.btn-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.btn-cost { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.btn-cost img { height: 18px; }
+.btn-time { font-size: 9px; opacity: 0.9; }
+
+/* ============ ОКОШКО ВЫБОРА ЭТАЖА ============ */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(20, 16, 46, 0.75);
+}
+.modal[hidden] { display: none; }
+
+.modal-box {
+  width: 100%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 16px;
+  background: var(--plate);
+  border: 3px solid #4a4f75;
+  border-radius: 12px;
+}
+.modal-title {
+  margin-bottom: 14px;
+  font-size: 12px;
+  text-align: center;
+}
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+  font-family: var(--pixel-font);
+  color: var(--text);
+  text-align: left;
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.choice:hover:not(:disabled) { border-color: #ffd84a; }
+.choice:disabled { cursor: default; opacity: 0.55; }
+.choice:disabled img { filter: grayscale(1); }
+.choice:disabled .choice-kind { color: #ffd84a; }
+.choice img {
+  width: 100%;
+  aspect-ratio: 605 / 124;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.choice-name { font-size: 7px; line-height: 1.4; }
+.choice-kind { font-size: 7px; color: #a7f070; }
+
+/* ============ ШАГ 5: КАССА, ЗАКРЫТЫЕ ЭТАЖИ ============ */
+.ico { height: 1.4em; vertical-align: -0.35em; }
+
+/* Справа в подписи: заполненность и номер этажа */
+.fl-right { display: flex; align-items: center; gap: 10px; }
+.fl-occ   { opacity: 0.85; }
+
+/* Значок кассы в правом верхнем углу этажа. Тап — собрать */
+.cash {
+  position: absolute;
+  top: 6%;
+  right: 3%;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 7px;
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--text);
+  background: var(--plate);
+  border: 2px solid #ffd84a;
+  border-radius: 8px;
+  box-shadow: 0 2px 0 var(--plate-edge);
+  cursor: pointer;
+}
+.cash[hidden] { display: none; }
+.cash.full { animation: cash-full 0.9s ease-in-out infinite; }
+@keyframes cash-full {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.12); }
+}
+
+/* «+120 🪙» после сбора */
+.collect-pop {
+  position: absolute;
+  top: 4%;
+  right: 4%;
+  z-index: 4;
+  font-size: 11px;
+  color: #ffd84a;
+  text-shadow: 2px 2px 0 var(--plate-edge);
+  white-space: nowrap;
+  pointer-events: none;
+  animation: collect-float 1.3s ease-out forwards;
+}
+@keyframes collect-float {
+  0%   { opacity: 0; transform: translateY(0); }
+  15%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+
+/* Магазин без работников: темнее и с табличкой */
+.closed-tag {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  padding: 5px 8px;
+  font-size: 8px;
+  white-space: nowrap;
+  background: var(--plate);
+  border: 2px solid #ff6b6b;
+  border-radius: 6px;
+}
+.floor.closed > img { filter: brightness(0.55) saturate(0.6); }
+.floor.closed .closed-tag { display: block; }
+
+/* Комната сна — нажимается */
+.floor.tappable { cursor: pointer; }
+.floor.tappable:hover > img { filter: brightness(1.08); }
+
+/* Сердечко над котом на работе мечты (тот же стиль, что корона) */
+.crown.heart { font-size: 9px; }
+
+
+/* ============ ОКОШКО ЖИЛЬЦОВ ============ */
+.modal-box { position: relative; }
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  color: var(--text);
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.modal-sub {
+  margin: -6px 0 12px;
+  font-size: 8px;
+  text-align: center;
+  opacity: 0.8;
+}
+.hint { font-size: 8px; line-height: 1.6; opacity: 0.75; text-align: center; margin: 8px 0; }
+
+/* Портрет кота: кадр «сидит» из листа */
+.avatar {
+  flex: none;
+  width: 44px;
+  aspect-ratio: 224 / 176;
+  background-size: 600% 100%;
+  background-position-x: 80%;
+  background-repeat: no-repeat;
+}
+.avatar.big { width: 96px; margin: 0 auto 6px; }
+
+.residents-list { display: flex; flex-direction: column; gap: 8px; }
+.resident {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 6px 6px;
+  font-family: var(--pixel-font);
+  color: var(--text);
+  text-align: left;
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.resident:hover { border-color: #ffd84a; }
+.res-text { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.res-name { font-size: 10px; }
+.res-job  { font-size: 7px; opacity: 0.8; }
+.res-dream { font-size: 10px; }
+
+/* Карточка кота */
+.back {
+  margin-bottom: 8px;
+  padding: 5px 8px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text);
+  background: none;
+  border: 2px solid #4a4f75;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.card { text-align: center; margin-bottom: 14px; }
+.card-name { font-size: 14px; margin-bottom: 10px; }
+.card-line { font-size: 8px; line-height: 1.6; }
+.dream-line { color: #ff9ab8; }
+
+.jobs { display: flex; flex-direction: column; gap: 6px; }
+.job {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text);
+  text-align: left;
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.job:hover:not(:disabled) { border-color: #ffd84a; }
+.job.dream { border-color: #ff9ab8; }
+.job.here  { border-color: #a7f070; }
+.job:disabled { cursor: default; opacity: 0.6; }
+.job.here:disabled { opacity: 1; }
+.job-side { white-space: nowrap; }
+
+.fire {
+  display: block;
+  margin: 12px auto 0;
+  padding: 8px 14px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text);
+  background: #7a2a3a;
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* ============ ШАГ 6: НАСТРОЙКИ И «С ВОЗВРАЩЕНИЕМ» ============ */
+.gear {
+  margin-right: auto;          /* прижимаем к левому краю, валюты — справа */
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  background: var(--plate);
+  border: 2px solid var(--plate-edge);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.welcome-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 6px 0 12px;
+  font-size: 9px;
+  line-height: 1.5;
+}
+.hint.warn { color: #ffd84a; opacity: 1; }
+
+.btn-ok {
+  display: block;
+  margin: 12px auto 0;
+  padding: 10px 18px;
+  font-family: var(--pixel-font);
+  font-size: 10px;
+  color: var(--text);
+  background: linear-gradient(#4fe3e0, var(--teal));
+  border: 2px solid var(--teal-dark);
+  border-radius: 8px;
+  text-shadow: 1px 1px 0 var(--teal-dark);
+  cursor: pointer;
+}
+.confirm-row { display: flex; justify-content: center; gap: 10px; }
+.confirm-row button { margin: 12px 0 0; }
+
+/* ============ ШАГ 7: ТОВАРЫ И СКЛАД ============ */
+/* Очередь из трёх: облачко среднего гостя чуть выше, чтобы не налезали */
+.cat.bubble-up .bubble { margin-bottom: 16px; }
+
+/* Значок склада на этаже: «📦 !» или «🚚 0:42» */
+.stock-badge { border-color: #73eff7; }
+.stock-badge.full { border-color: #ff6b6b; }
+
+.products { display: flex; flex-direction: column; gap: 8px; }
+.product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 8px;
+}
+.product.off { opacity: 0.5; }
+.product-icon { width: 44px; height: 44px; flex: none; }
+.product-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.product-name { font-size: 9px; }
+.price { color: #ffd84a; margin-left: 4px; }
+.product-who { display: flex; align-items: center; gap: 6px; font-size: 7px; }
+.avatar.mini { width: 26px; }
+.muted { opacity: 0.6; font-size: 7px; }
+.ok { font-size: 7px; color: #a7f070; }
+
+/* Полоска остатка на складе */
+.stock-bar {
+  height: 6px;
+  background: #14102e;
+  border: 1px solid #4a4f75;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.stock-bar span { display: block; height: 100%; background: #a7f070; }
+
+.product-side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  font-size: 8px;
+}
+.stock-num { font-size: 9px; }
+.dl { display: flex; align-items: center; gap: 4px; color: #73eff7; }
+.order {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--text);
+  background: linear-gradient(#4fe3e0, var(--teal));
+  border: 2px solid var(--teal-dark);
+  border-radius: 6px;
+  cursor: pointer;
+  animation: cash-full 0.9s ease-in-out infinite;
+}
+
+/* ============ ШАГ 8: УЛУЧШЕНИЯ И ЛИФТЁР ============ */
+.bottombar { display: flex; gap: 8px; }
+.btn-up {
+  flex: none;
+  width: 56px;
+  font-size: 22px;
+  background: linear-gradient(#b48cff, #7a4fd6);
+  border: 3px solid #3e2479;
+  border-radius: 10px;
+  box-shadow: 0 4px 0 #3e2479;
+  cursor: pointer;
+}
+.btn-up:active { transform: translateY(3px); box-shadow: 0 1px 0 #3e2479; }
+
+.up-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.up-row, .robot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 8px;
+}
+.robot { border-color: #73eff7; margin-bottom: 8px; }
+.up-icon { font-size: 22px; flex: none; width: 30px; text-align: center; }
+.up-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.up-name { font-size: 9px; }
+.up-lvl { font-size: 7px; opacity: 0.7; margin-left: 4px; }
+.up-eff { font-size: 7px; line-height: 1.6; opacity: 0.9; }
+.up-eff b { color: #a7f070; font-weight: normal; }
+.up-btn {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 7px 8px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text);
+  background: linear-gradient(#b48cff, #7a4fd6);
+  border: 2px solid #3e2479;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.up-btn:disabled { filter: grayscale(0.8) brightness(0.7); cursor: default; }
+
+/* Робот-лифтёр на шахте */
+.robot-badge {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  z-index: 4;
+  transform: translateX(-50%);
+  padding: 3px 5px;
+  font-size: 8px;
+  white-space: nowrap;
+  background: var(--plate);
+  border: 2px solid #73eff7;
+  border-radius: 6px;
+}
+.robot-badge[hidden] { display: none; }
+
+/* Карточка люкса */
+.vip-row { display: flex; justify-content: center; gap: 8px; margin-bottom: 8px; }
+.vip-row .avatar.mini { width: 44px; }
+.lux-cash {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  font-size: 9px;
+  background: var(--plate-edge);
+  border: 2px solid #ffd84a;
+  border-radius: 8px;
+}
+.bottombar .btn-build { flex: 1; width: auto; }
+.order:disabled { animation: none; filter: grayscale(0.8) brightness(0.7); cursor: default; }
+
+/* ============ ШАГ 9: РЕЙТИНГ, ЧАТ, ПОДАРОК ============ */
+.topbar { align-items: center; gap: 6px; }
+.topbar .pill { min-width: 0; }
+.rating-pill {
+  font-family: var(--pixel-font);
+  font-size: 11px;
+  color: #ffd84a;
+  cursor: pointer;
+  gap: 4px;
+}
+.chat-btn {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  background: var(--plate);
+  border: 2px solid var(--plate-edge);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.unread {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  padding: 3px 4px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: #fff;
+  background: #ff4d6d;
+  border: 2px solid var(--plate-edge);
+  border-radius: 10px;
+}
+.unread[hidden] { display: none; }
+
+/* Рейтинг: причины */
+.factor {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  font-size: 8px;
+  line-height: 1.5;
+  background: var(--plate-edge);
+  border-left: 4px solid #4a4f75;
+  border-radius: 6px;
+}
+.factor.plus  { border-left-color: #a7f070; }
+.factor.minus { border-left-color: #ff6b6b; }
+.factor.plus span:last-child  { color: #a7f070; }
+.factor.minus span:last-child { color: #ff6b6b; }
+
+/* Чат */
+.chat-list { display: flex; flex-direction: column; gap: 8px; }
+.msg {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  background: var(--plate-edge);
+  border-radius: 8px;
+}
+.msg .avatar.mini { width: 34px; }
+.msg-main { flex: 1; min-width: 0; }
+.msg-head { display: flex; justify-content: space-between; gap: 6px; margin-bottom: 6px; font-size: 8px; }
+.msg-head b { font-weight: normal; color: #ffd84a; }
+.msg-head span { opacity: 0.6; font-size: 7px; }
+.msg-text { font-size: 8px; line-height: 1.6; }
+
+/* Всплывашка важного сообщения */
+.toast {
+  position: fixed;
+  top: 56px;
+  left: 50%;
+  z-index: 60;
+  transform: translateX(-50%);
+  width: min(440px, calc(100% - 24px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  font-size: 8px;
+  line-height: 1.6;
+  background: var(--plate);
+  border: 2px solid #ffd84a;
+  border-radius: 10px;
+  box-shadow: 0 4px 0 var(--plate-edge);
+  cursor: pointer;
+  animation: toast-in 0.3s ease-out;
+}
+.toast b { font-weight: normal; color: #ffd84a; }
+@keyframes toast-in { from { transform: translate(-50%, -20px); opacity: 0; } }
+
+/* Подарок дня */
+.days {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.day {
+  padding: 8px 4px;
+  text-align: center;
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 8px;
+}
+.day.done  { opacity: 0.45; }
+.day.today { border-color: #ffd84a; box-shadow: 0 0 8px #ffd84a; }
+.day-n { font-size: 7px; opacity: 0.8; margin-bottom: 6px; }
+.day-prize { font-size: 9px; }
+
+/* ============ ЧАТ-ПЕРЕХОДЫ, ЛИФТ, РЫБКИ ============ */
+.msg.link { cursor: pointer; align-items: center; }
+.msg.link:hover { outline: 2px solid #ffd84a; }
+.msg-go { font-size: 14px; opacity: 0.6; padding: 0 2px; }
+
+/* Пустая кабинка: номера этажей тусклые */
+.shaft.empty .lift-num:not(:disabled) { opacity: 0.45; cursor: default; }
+
+/* Кнопки за рыбки */
+.fish-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 7px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text);
+  background: linear-gradient(#73c8ff, #3b7fd6);
+  border: 2px solid #1f3f7a;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.fish-btn:disabled { filter: grayscale(0.8) brightness(0.7); cursor: default; }
+.fish-btn[hidden] { display: none; }
+.construct { flex-direction: column; gap: 6px; }
+.up-btn.fish { background: linear-gradient(#73c8ff, #3b7fd6); border-color: #1f3f7a; }
+.robot-btns { display: flex; flex-direction: column; gap: 4px; align-items: stretch; }
+
+/* Верхняя панель всегда видна: полупрозрачная подложка, чтобы не путаться с подписями этажей */
+.topbar {
+  background: linear-gradient(rgba(27, 24, 56, 0.92), rgba(27, 24, 56, 0.75));
+  backdrop-filter: blur(3px);
+}
+
+/* ============ ШАГ 10: ОБУЧЕНИЕ, АНИМАЦИИ, НАСТРОЙКИ ============ */
+/* Подсказка консьержа: сверху под панелью (внизу лобби и лифт — их нельзя закрывать) */
+.tut {
+  position: fixed;
+  left: 50%;
+  top: 58px;
+  z-index: 70;
+  transform: translateX(-50%);
+  width: min(460px, calc(100% - 16px));
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: #fff8e8;
+  color: var(--plate);
+  border: 3px solid var(--plate);
+  border-radius: 12px;
+  box-shadow: 0 4px 0 var(--plate-edge);
+  animation: toast-in 0.3s ease-out;
+}
+.tut[hidden] { display: none; }
+.tut-cat { width: 52px !important; flex: none; align-self: flex-end; }
+.tut-main { flex: 1; min-width: 0; }
+.tut-text { font-size: 8px; line-height: 1.7; margin-bottom: 8px; }
+.tut-btns { display: flex; align-items: center; gap: 8px; }
+.tut-count { font-size: 7px; opacity: 0.6; margin-right: auto; }
+.tut-skip {
+  font-family: var(--pixel-font);
+  font-size: 7px;
+  color: var(--plate);
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.tut .btn-ok { margin: 0; padding: 7px 12px; font-size: 8px; }
+
+/* Подсвеченная цель: пульсирующая жёлтая рамка */
+.tut-target {
+  outline: 3px solid #ffd84a !important;
+  outline-offset: 2px;
+  animation: tut-pulse 1s ease-in-out infinite !important;
+  position: relative;
+  z-index: 5;
+}
+@keyframes tut-pulse {
+  0%, 100% { outline-color: #ffd84a; }
+  50%      { outline-color: #ff8a3d; }
+}
+
+/* Монетки летят к балансу */
+.fly-coin {
+  position: fixed;
+  z-index: 80;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+.pill.bump { animation: bump 0.25s ease-out; }
+@keyframes bump {
+  50% { transform: scale(1.12); }
+}
+
+/* Кнопка стройки подпрыгивает, когда хватает денег */
+.btn-build.pop { animation: pop 0.6s ease-out; }
+@keyframes pop {
+  30% { transform: translateY(-8px) scale(1.03); }
+  60% { transform: translateY(0) scale(0.98); }
+}
+
+/* Новый этаж: «выезжает» и пылит */
+.floor-block.appear { animation: appear 0.5s ease-out; }
+@keyframes appear {
+  from { transform: scaleY(0.6); opacity: 0.3; }
+  to   { transform: scaleY(1);   opacity: 1; }
+}
+.dust {
+  position: absolute;
+  bottom: 2%;
+  z-index: 4;
+  width: 14%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(240, 230, 210, 0.85);
+  pointer-events: none;
+  animation: dust 0.8s ease-out forwards;
+}
+@keyframes dust {
+  from { transform: scale(0.3) translateY(0);    opacity: 0.9; }
+  to   { transform: scale(1.4) translateY(-30%); opacity: 0; }
+}
+
+/* Кот на работе мечты подпрыгивает от счастья */
+.cat.hop .cat-sprite { animation: hop 0.6s ease-out; }
+@keyframes hop {
+  40% { translate: 0 -25%; }
+}
+
+/* Настройки: строки-переключатели */
+.set-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 10px;
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--text);
+  background: var(--plate-edge);
+  border: 2px solid #4a4f75;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.switch {
+  width: 38px;
+  height: 20px;
+  padding: 2px;
+  background: #4a4f75;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+.switch i {
+  display: block;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+.switch.on { background: #3fbf6a; }
+.switch.on i { transform: translateX(18px); }
+
+/* Пока видна подсказка, всплывашки чата — ниже неё */
+.tut:not([hidden]) ~ .toast { top: 180px; }
+.tut .tut-next[hidden] { display: none; }
+
+/* Готовый этаж ждёт выбора типа: мягко мигает */
+.floor.ready-choose .construct-text { animation: cash-full 0.9s ease-in-out infinite; border-color: #ffd84a; }
+.tut .tut-skip[hidden] { display: none; }
+
+/* ============ ШАГ 11: СОБЫТИЯ ============ */
+.event-btn {
+  height: 36px;
+  padding: 0 8px;
+  font-family: var(--pixel-font);
+  font-size: 9px;
+  color: var(--text);
+  background: linear-gradient(#ff9a5a, #e0563a);
+  border: 2px solid #7a2a1a;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.event-btn[hidden] { display: none; }
+.event-btn.urgent { animation: cash-full 0.9s ease-in-out infinite; }
+/* В узкой панели прячем подпись у монет/рыбок чуть плотнее */
+.topbar { flex-wrap: nowrap; }
+
+.ev-who { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; font-size: 9px; }
+.ev-who b { font-weight: normal; color: #ffd84a; }
+.ev-who .avatar.mini { width: 40px; }
+.ev-item {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  margin-bottom: 6px; font-size: 11px;
+}
+.ev-item img { width: 48px; height: 48px; }
+.ev-line { font-size: 8px; line-height: 1.8; text-align: center; }
+.ev-line b { font-weight: normal; color: #ffd84a; }
+.ev-line.warn { color: #ff9a9a; }
+.ev-line.good { color: #a7f070; }
+.ev-banner {
+  margin-bottom: 10px;
+  padding: 8px;
+  font-size: 8px;
+  line-height: 1.6;
+  text-align: center;
+  background: #4a2a1a;
+  border: 2px solid #ff9a5a;
+  border-radius: 8px;
+}
+.ev-banner.good { border-color: #a7f070; background: #1f3a24; }
+.order.topup { animation: none; font-size: 7px; padding: 5px 6px; background: linear-gradient(#8fe0d0, #4aa89a); }
+
+/* Плотная верхняя панель: 6 кнопок должны влезать и на узком телефоне */
+.topbar { gap: 4px; padding: 8px 6px; }
+.topbar .pill { gap: 4px; padding: 4px 6px 4px 4px; font-size: 10px; flex: none; }
+.topbar .pill img { height: 18px; }
+.topbar .gear, .topbar .chat-btn { width: 32px; height: 32px; font-size: 16px; flex: none; }
+.topbar .rating-pill { font-size: 10px; }
+.event-btn { height: 32px; padding: 0 5px; font-size: 8px; flex: none; }
+
+/* ============ СТРЕЛКА К ЛИФТУ ============ */
+.to-lift {
+  position: fixed;
+  left: max(12px, calc(50% - 228px));   /* над шахтой лифта (левый край игры) */
+  bottom: 96px;
+  z-index: 45;
+  width: 52px;
+  height: 52px;
+  font-size: 24px;
+  background: var(--plate);
+  border: 3px solid #4a4f75;
+  border-radius: 50%;
+  box-shadow: 0 4px 0 var(--plate-edge);
+  cursor: pointer;
+}
+.to-lift[hidden] { display: none; }
+.to-lift.blink {
+  border-color: #ffd84a;
+  animation: arrow-blink 0.8s ease-in-out infinite;
+}
+@keyframes arrow-blink {
+  0%, 100% { transform: translateY(0);   box-shadow: 0 4px 0 var(--plate-edge), 0 0 0 0 rgba(255, 216, 74, 0.8); }
+  50%      { transform: translateY(4px); box-shadow: 0 4px 0 var(--plate-edge), 0 0 0 8px rgba(255, 216, 74, 0); }
+}
+
+/* ============ НОВЫЕ ИКОНКИ ============ */
+.to-lift { display: flex; align-items: center; justify-content: center; padding: 0; }
+.to-lift img { width: 34px; height: 34px; }
+.btn-up { display: flex; align-items: center; justify-content: center; padding: 0; }
+.btn-up img { width: 40px; height: 40px; filter: drop-shadow(2px 2px 0 #3e2479); }
+.up-icon img { width: 30px; height: 30px; display: block; }
+
+/* ============ ЯЗЫК В НАСТРОЙКАХ ============ */
+.set-row.lang-row { cursor: default; flex-wrap: wrap; gap: 8px; }
+.lang-btns { display: flex; gap: 6px; }
+.lang-btn {
+  padding: 6px 8px;
+  font-family: var(--pixel-font);
+  font-size: 8px;
+  color: var(--text);
+  background: var(--plate);
+  border: 2px solid #4a4f75;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.lang-btn.on { border-color: #ffd84a; background: #3a3070; }
