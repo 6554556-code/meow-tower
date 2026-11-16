@@ -282,18 +282,6 @@ const EN_NAMES = {
   }
 };
 
-const CAT_NAMES_EN = [
-  'Whiskers', 'Mochi', 'Biscuit', 'Pumpkin', 'Oreo', 'Simba', 'Luna', 'Milo', 'Nala', 'Pepper',
-  'Ginger', 'Cookie', 'Muffin', 'Peanut', 'Pickles', 'Noodle', 'Tofu', 'Sushi', 'Waffles', 'Pancake',
-  'Nugget', 'Cupcake', 'Marshmallow', 'Caramel', 'Toffee', 'Truffle', 'Butterscotch', 'Sprinkles', 'Jellybean', 'Donut',
-  'Bagel', 'Pretzel', 'Taco', 'Nacho', 'Mango', 'Kiwi', 'Coconut', 'Olive', 'Bean', 'Sesame',
-  'Shadow', 'Smokey', 'Snowball', 'Fluffy', 'Patches', 'Socks', 'Mittens', 'Boots', 'Tiger', 'Leo',
-  'Oscar', 'Felix', 'Jasper', 'Theo', 'Archie', 'Ollie', 'Toby', 'Charlie', 'Gus', 'Hugo',
-  'Winston', 'Duke', 'Baron', 'Prince', 'Captain', 'Pixel', 'Comet', 'Cosmo', 'Rocket', 'Nova',
-  'Stella', 'Willow', 'Hazel', 'Daisy', 'Poppy', 'Rosie', 'Lily', 'Ivy', 'Pearl', 'Ruby',
-  'Bubbles', 'Ziggy', 'Zorro', 'Mr. Purr', 'Sir Fluff', 'Paws', 'Meowzart', 'Purrcy', 'Catniss', 'Furball'
-];
-
 // Английские фразы котов (те же ключи, что в CHAT_LINES)
 const CHAT_LINES_EN = {
   hello: [
@@ -405,10 +393,12 @@ function applyLanguage() {
     TUTORIAL.forEach((s, i) => { if (TUTORIAL_EN[i]) s.text = TUTORIAL_EN[i]; });
     TIPS.forEach(x => { if (TIPS_EN[x.id]) x.text = TIPS_EN[x.id]; });
     CAT_NAMES.length = 0;
-    CAT_NAMES.push(...CAT_NAMES_EN);
+    CAT_NAMES.push(...CAT_NAME_PAIRS.map(p => p[1]));   // английские имена из names.js
     document.getElementById('sign').src = 'assets/bg/sign_en.png';
     document.title = 'Meow Tower';
   }
+  localizeCatNames();   // жильцы — на выбранном языке (Пельмень ↔ Dumpling)
+
   // Подписи в обучении («Понятно» / «Готово!»)
   TUTORIAL.forEach(s => { if (s.button) s.button = s.button === 'Готово!' ? t('tut.done') : t('tut.ok'); });
 

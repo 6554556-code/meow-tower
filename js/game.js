@@ -173,19 +173,23 @@ function chooseFloorType(num, type) {
 
 // ---------- Жильцы и работа ----------
 
-// Имя, которого ещё нет в башне. Повтор — очень редко (2%) или когда имена кончились
-function pickName() {
-  const used = new Set(state.residents.map(r => r.name));
-  const free = CAT_NAMES.filter(n => !used.has(n));
-  if (!free.length || Math.random() < 0.02) return randomItem(CAT_NAMES);
+// Номер имени, которого ещё нет в башне. Повтор — очень редко (2%) или когда имена кончились.
+// Кот хранит номер, а не само имя: так он переименуется при смене языка (см. names.js)
+function pickNameIdx() {
+  const used = new Set(state.residents.map(r => r.nameIdx));
+  const all = CAT_NAMES.map((_, i) => i);
+  const free = all.filter(i => !used.has(i));
+  if (!free.length || Math.random() < 0.02) return randomItem(all);
   return randomItem(free);
 }
 
 // Гость заселился в комнату сна
 function addResident(guest, num) {
+  const nameIdx = pickNameIdx();
   const r = {
     id: ++state.residentSeq,
-    name: pickName(),
+    name: CAT_NAMES[nameIdx],
+    nameIdx,
     breed: guest.breed,
     home: num,
     job: null,
