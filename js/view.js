@@ -862,12 +862,17 @@ function renderSettings(confirming) {
         <span>${state.settings.sound ? '🔊' : '🔇'} ${t('set.sound')}</span>
         <span class="switch ${state.settings.sound ? 'on' : ''}"><i></i></span>
       </button>
+      <button class="set-row" id="btn-music">
+        <span>${state.settings.music ? '🎵' : '🔇'} ${t('set.music')}</span>
+        <span class="switch ${state.settings.music ? 'on' : ''}"><i></i></span>
+      </button>
       <button class="set-row" id="btn-tutorial"><span>${t('set.tutorial')}</span><span>›</span></button>
       <p class="hint">${t('set.saved')}</p>
       <button class="fire" id="btn-reset">${t('set.reset')}</button>`;
     body.querySelectorAll('.lang-btn').forEach(b => b.onclick = () => setLanguage(b.dataset.lang));
     body.querySelector('#btn-reset').onclick = () => renderSettings(true);
     body.querySelector('#btn-sound').onclick = () => { toggleSound(); renderSettings(false); };
+    body.querySelector('#btn-music').onclick = () => { toggleMusic(); renderSettings(false); };
     body.querySelector('#btn-tutorial').onclick = restartTutorial;
   } else {
     body.innerHTML = `

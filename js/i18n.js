@@ -98,6 +98,7 @@ const I18N = {
     // --- Настройки
     'set.title': '⚙️ НАСТРОЙКИ',
     'set.sound': 'Звук',
+    'set.music': 'Музыка',
     'set.lang': 'Язык',
     'set.tutorial': '🎓 Пройти обучение заново',
     'set.saved': 'Игра сохраняется сама, каждые 5 секунд, в этом браузере.',
@@ -223,6 +224,7 @@ const I18N = {
 
     'set.title': '⚙️ SETTINGS',
     'set.sound': 'Sound',
+    'set.music': 'Music',
     'set.lang': 'Language',
     'set.tutorial': '🎓 Replay the tutorial',
     'set.saved': 'The game saves itself every 5 seconds, in this browser.',

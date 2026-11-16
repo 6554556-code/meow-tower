@@ -26,7 +26,7 @@ const state = {
   chatUnread: 0,
   departures: [],                                 // когда съезжали коты (для минуса к рейтингу)
   daily: { lastDay: null, streak: 0 },            // подарок дня: когда забирала и какая серия
-  settings: { sound: false },                     // звук по умолчанию выключен
+  settings: { sound: false, music: true },        // звуки по умолчанию выключены, музыка включена
   tutorial: { step: 0, done: false, tips: [] },
   event: null,                                    // текущее событие (events.js)
   eventTimer: CONFIG.events.firstMinutes * 60,    // секунд игры до следующего события
@@ -769,6 +769,7 @@ function startGame() {
   showDaily();                        // подарок дня — поверх «с возвращением»
   updateRatingView();
   startAutosave();
+  initMusic();                        // фоновая музыка (music.js)
 
   document.getElementById('btn-settings').addEventListener('click', openSettings);
   document.getElementById('btn-upgrades').addEventListener('click', openUpgrades);

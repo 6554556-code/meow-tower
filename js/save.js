@@ -69,7 +69,7 @@ function loadGame() {
   state.chatUnread = data.chatUnread || 0;
   state.departures = data.departures || [];
   state.daily = data.daily || { lastDay: null, streak: 0 };
-  state.settings = Object.assign({ sound: false, lang: null }, data.settings);
+  state.settings = Object.assign({ sound: false, music: true, lang: null }, data.settings);
   // Старые сохранения (до обучения) — обучение не показываем, ты уже всё знаешь
   state.tutorial = data.tutorial || { step: 0, done: true };
   state.event = data.event || null;
