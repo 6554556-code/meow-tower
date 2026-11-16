@@ -1,7 +1,7 @@
 // =====================================================
 //  visitors.js — СЛУЧАЙНЫЕ ПОСЕТИТЕЛИ
 //
-//  С 5 этажа иногда (1 из 50) покупатель оказывается особым:
+//  С 5 этажа иногда покупатель оказывается особым (шансы — в config.js):
 //   🤑 щедрый гость — покупает и оставляет чаевые (иногда ещё и рыбку)
 //   🦹 воришка      — ничего не покупает, тащит часть монет из кошелька
 //   🐷 обжора       — съедает несколько товаров с полок и не платит
@@ -18,9 +18,9 @@ function randInt(min, max) { return min + Math.floor(Math.random() * (max - min 
 // Особый ли этот покупатель? Вернёт 'tipper' / 'thief' / 'glutton' или null
 function rollSpecial() {
   const s = CONFIG.guests.special;
-  if (topFloor().num < s.fromFloor || Math.random() >= s.chance) return null;
-  let roll = Math.random() * SPECIAL_KINDS.reduce((sum, k) => sum + s[k].weight, 0);
-  return SPECIAL_KINDS.find(k => (roll -= s[k].weight) < 0) || 'tipper';
+  if (topFloor().num < s.fromFloor) return null;
+  let roll = Math.random();                       // один бросок: у каждого вида свой кусочек шансов
+  return SPECIAL_KINDS.find(k => (roll -= s[k].chance) < 0) || null;
 }
 
 // Значок над головой (в лобби, в кабинке и на этаже)
