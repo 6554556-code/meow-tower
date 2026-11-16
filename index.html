@@ -2,12 +2,13 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <title>Мяу Башня</title>
-  <!-- Пиксельный шрифт с кириллицей -->
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-  <!-- Telegram Mini App: даёт игре знать, кто играет. Вне Telegram ничего не делает -->
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Пиксельный шрифт лежит в assets/fonts (подключён в style.css) — работает без интернета -->
+  <!-- Telegram Mini App: даёт игре знать, кто играет. В приложении для iOS/Android не грузим -->
+  <script>
+    if (!window.Capacitor) document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>');
+  </script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -171,6 +172,7 @@
   <script src="js/events.js"></script>
   <script src="js/visitors.js"></script>
   <script src="js/save.js"></script>
+  <script src="js/native.js"></script>
   <script src="js/cloud.js"></script>
   <script src="js/game.js"></script>
 </body>

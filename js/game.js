@@ -801,4 +801,4 @@ function startGame() {
 }
 
 // Сначала спрашиваем облако (в Telegram), потом запускаем игру
-cloudInit().finally(startGame);
+nativeInit().then(cloudInit).finally(startGame);   // приложение → Telegram → старт

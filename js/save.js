@@ -36,11 +36,13 @@ function saveGame(force) {
     ratingMods: state.ratingMods
     // Гость в лобби и в кабинке не сохраняются: после возвращения придёт новый
   };
+  const json = JSON.stringify(data);
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    localStorage.setItem(SAVE_KEY, json);
   } catch (e) {
     console.warn('Не получилось сохранить игру:', e);
   }
+  nativeSave(json);                                    // в приложении — ещё и в надёжное хранилище (native.js)
   cloudPush(data, force === true);
 }
 
@@ -122,6 +124,7 @@ function loadGame() {
 async function resetGame() {
   resetting = true;
   try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* ничего страшного */ }
+  await nativeReset();                                 // и в приложении
   await cloudReset();                                  // и в облаке тоже
   location.reload();
 }
