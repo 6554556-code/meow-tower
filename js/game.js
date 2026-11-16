@@ -553,6 +553,7 @@ function revalidateGuests() {
     const dest = randomItem(pool);
     guest.dest = dest.num;
     if (!same.length) { guest.vip = false; guest.resident = kindOf(dest) === 'living'; }
+    if (kindOf(dest) !== 'work') guest.special = null;   // особые гости — только в магазины
     updateGuestBubbleView(guest);
   });
 }
@@ -581,6 +582,7 @@ function spawnGuest() {
     dest: dest.num,
     vip: isVip,
     resident: !isVip && kindOf(dest) === 'living',  // едет заселяться
+    special: !isVip && kindOf(dest) === 'work' ? rollSpecial() : null,   // щедрый / воришка / обжора (visitors.js)
     waited: 0                                       // сколько секунд игры ждёт лифт (терпение)
   };
   g.waiting.push(guest);
@@ -636,21 +638,25 @@ function deliverGuest(guest, num) {
     sfx('meow');
     placeResidentView(r, { x: 3 });
   } else {
-    visitorView(guest.breed, num, { leaveAfter: CONFIG.guests.staySeconds });
-    // Покупатель в магазине: берёт 1 товар
-    if (isBuilt(getFloor(num), 'work')) {
-      const price = sellOne(num);
-      if (price) {
-        state.coins += price;
-        showSaleView(num, price);
-        sfx('coin');
-      }
-    }
+    visitorView(guest.breed, num, { leaveAfter: CONFIG.guests.staySeconds, badge: specialIcon(guest) });
+    if (guest.special) specialVisit(guest, num);   // сюрприз от особого гостя (visitors.js)
+    else shopperBuys(num);
   }
 
   if (tip) showTipView(tip);
   updateHud();
   setTimeout(returnCab, CONFIG.lift.returnDelay * 1000);
+}
+
+// Покупатель в магазине: берёт 1 товар
+function shopperBuys(num) {
+  if (!isBuilt(getFloor(num), 'work')) return;
+  const price = sellOne(num);
+  if (price) {
+    state.coins += price;
+    showSaleView(num, price);
+    sfx('coin');
+  }
 }
 
 // Довезли — кабинка сама едет вниз в лобби (с анимацией)

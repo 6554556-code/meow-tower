@@ -36,6 +36,22 @@ const CHAT_LINES = {
     '«{item}» привезли, торгуем! 🚚',
     'Поставка пришла! «{item}» снова в продаже 😺'
   ],
+  // Случайные посетители (visitors.js)
+  visTipper: [
+    'Чудесная башня! Держите {coins} монет на чай 🤑',
+    'Обслуживание — мур! Вот вам {coins} монет 💰'
+  ],
+  visTipperFish: ['Какой сервис! {coins} монет и рыбка в придачу 🐟'],
+  visThief: [
+    'Хе-хе, {coins} монет теперь мои! Ищите ветра в поле 😼',
+    'Ой, а чей это кошелёк? Был ваш — стал мой. Минус {coins} монет 🦹'
+  ],
+  visThiefEmpty: ['Залез в кошелёк, а там пусто… Ну и башня 🙄'],
+  visGlutton: [
+    'Ам-ням! {items} — было вкусно, а платить я не буду 🐷',
+    'Я тут немножко перекусил: {items}. Запишите на счёт соседа 😋'
+  ],
+  visGluttonEmpty: ['Пришёл покушать, а полки пустые… Обидно 🐷'],
   vip: [
     'Хм, неплохой люкс. Я остаюсь 👑',
     'Шампанское… то есть сливки в номер, пожалуйста 👑'
@@ -174,7 +190,8 @@ function chatSay(kind, r, vars = {}, go = null) {
   state.chatUnread++;
 
   const important = ['leave', 'outOfStock', 'warn', 'eventOrder', 'eventSale', 'eventInspection',
-                     'eventOrderOk', 'eventOrderFail', 'eventInspectionOk', 'eventInspectionFail'];
+                     'eventOrderOk', 'eventOrderFail', 'eventInspectionOk', 'eventInspectionFail',
+                     'visTipper', 'visTipperFish', 'visThief', 'visThiefEmpty', 'visGlutton', 'visGluttonEmpty'];
   if (important.includes(kind)) showToastView(r, text, go);   // важное — всплывашкой
   refreshChatModal();
 }

@@ -408,7 +408,7 @@ function lobbyEl() {
 
 // Облачко над головой: «→ 4». VIP — с короной, будущий жилец — с домиком
 function bubbleHTML(guest) {
-  const mark = guest.vip ? '👑 ' : guest.resident ? '🏠 ' : '';
+  const mark = guest.vip ? '👑 ' : guest.special ? specialIcon(guest) + ' ' : guest.resident ? '🏠 ' : '';
   return `<div class="bubble${guest.vip ? ' vip' : ''}">${mark}→ ${guest.dest}</div>`;
 }
 
@@ -975,7 +975,7 @@ function makeCatEl(breed) {
 
 // Живой кот на этаже.
 // opts.x — где появиться (%), opts.vip — с короной, opts.heart — ❤️ (работа мечты),
-// opts.rid — номер жильца, opts.leaveAfter — уйти через N секунд
+// opts.rid — номер жильца, opts.leaveAfter — уйти через N секунд, opts.badge — значок особого гостя
 function createCat(breed, floorEl, opts = {}) {
   const cat = makeCatEl(breed);
   const placed = opts.x !== undefined && opts.x !== null;
@@ -986,6 +986,7 @@ function createCat(breed, floorEl, opts = {}) {
   if (opts.rid) cat.dataset.rid = opts.rid;
   if (opts.vip) cat.insertAdjacentHTML('beforeend', '<div class="crown">👑</div>');
   if (opts.heart) cat.insertAdjacentHTML('beforeend', '<div class="crown heart">❤️</div>');
+  if (opts.badge) cat.insertAdjacentHTML('beforeend', `<div class="crown special">${opts.badge}</div>`);   // особый гость
 
   floorEl.appendChild(cat);
   setTimeout(() => nextAction(cat), placed ? 300 : rand(500, 2500));

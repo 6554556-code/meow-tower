@@ -124,6 +124,9 @@ const I18N = {
     // --- Чат
     'chat.guest': 'Гость',
     'chat.vipGuest': 'VIP-гость',
+    'vis.tipper': 'Щедрый гость',
+    'vis.thief': 'Воришка',
+    'vis.glutton': 'Обжора',
     'chat.now': 'только что',
     'chat.min': '{m} мин назад',
     'chat.h': '{h} ч назад',
@@ -248,6 +251,9 @@ const I18N = {
 
     'chat.guest': 'Guest',
     'chat.vipGuest': 'VIP guest',
+    'vis.tipper': 'Generous guest',
+    'vis.thief': 'Pickpocket',
+    'vis.glutton': 'Glutton',
     'chat.now': 'just now',
     'chat.min': '{m} min ago',
     'chat.h': '{h} h ago',
@@ -304,6 +310,12 @@ const CHAT_LINES_EN = {
     "The {item} shelf is empty. I'm just standing here…"
   ],
   arrived: ['{item} delivered, back in business! 🚚', 'Delivery is here! {item} is on sale again 😺'],
+  visTipper: ['What a lovely tower! Here are {coins} coins as a tip 🤑', 'Purr-fect service! Take {coins} coins 💰'],
+  visTipperFish: ['Such service! {coins} coins and a fish on top 🐟'],
+  visThief: ["Heh-heh, {coins} coins are mine now! Catch me if you can 😼", "Oops, whose wallet is this? Was yours, now it's mine. Minus {coins} coins 🦹"],
+  visThiefEmpty: ['I sneaked into the wallet and it was empty… What a tower 🙄'],
+  visGlutton: ["Nom-nom! {items} — delicious, and I'm not paying 🐷", 'Just had a little snack: {items}. Put it on my neighbour\'s tab 😋'],
+  visGluttonEmpty: ['I came for a snack and the shelves are empty… So sad 🐷'],
   vip: ["Hmm, not a bad suite. I'm staying 👑", 'Champagne… I mean, cream to my room, please 👑'],
   bored: ["I'm bored… Find me a job 🥺", 'Been lying around for an hour. Does anyone need me?'],
   warn: ["If nobody finds me a job, I'm moving out 😠", 'Final warning: no job, no me!'],

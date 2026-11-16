@@ -540,6 +540,7 @@ body {
 
 /* Сердечко над котом на работе мечты (тот же стиль, что корона) */
 .crown.heart { font-size: 9px; }
+.crown.special { font-size: 13px; top: -16%; }   /* значок особого гостя — чуть крупнее короны */
 
 
 /* ============ ОКОШКО ЖИЛЬЦОВ ============ */
@@ -1218,3 +1219,6 @@ body {
   cursor: pointer;
 }
 .lang-btn.on { border-color: #ffd84a; background: #3a3070; }
+
+/* Случайные посетители: потеря (воришка, обжора) — красным */
+.collect-pop.loss { color: #ff6b6b; }
