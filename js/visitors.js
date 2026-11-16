@@ -6,6 +6,8 @@
 //   🦹 воришка      — ничего не покупает, тащит часть монет из кошелька
 //   🐷 обжора       — съедает несколько товаров с полок и не платит
 //  Едут как обычные гости (и с роботом-лифтёром тоже), сюрприз — на этаже.
+//  Воришка и обжора сначала 10 секунд крутятся у входа в лобби, консьерж
+//  поднимает тревогу. Заметила и тапнула по ним, пока они в лобби, — прогнала.
 //  Все цифры — в config.js → guests.special
 // =====================================================
 
@@ -88,10 +90,100 @@ function specialVisit(guest, num) {
 }
 
 // «−120 🪙» красным над этажом
-function showLossView(num, text) {
+function showLossView(num, text) { showFloorPopView(num, text, 'loss'); }
+
+function showFloorPopView(num, text, cls) {
   const pop = document.createElement('div');
-  pop.className = 'collect-pop loss';
+  pop.className = 'collect-pop ' + cls;
   pop.innerHTML = text;
   floorEl(num).appendChild(pop);
   setTimeout(() => pop.remove(), 1300);
+}
+
+
+// ---------- Недоброжелатели у входа ----------
+
+// Воришка или обжора (их можно прогнать)
+function isSneaky(guest) {
+  return Boolean(guest && guest.special && CONFIG.guests.special[guest.special].sneaky);
+}
+
+// Ещё крутится у входа — в лифт пока не садится
+function isSneaking(guest) {
+  return Boolean(guest.sneakUntil) && Date.now() < guest.sneakUntil;
+}
+
+// Новый гость: если недоброжелатель — сначала погуляет у входа
+function prepareSpecial(guest) {
+  guest.sneakUntil = isSneaky(guest) ? Date.now() + CONFIG.guests.special.sneakSeconds * 1000 : null;
+}
+
+// Консьерж поднимает тревогу (в чат и всплывашкой; тап по ней — к лобби)
+function warnIntruder(guest) {
+  chatSay('visIntruder', { name: t('vis.concierge'), breed: 'concierge' }, { icon: specialIcon(guest) }, { floor: 1 });
+}
+
+// Каждый тик: у кого время вышло — встаёт в очередь к лифту
+function sneakTick() {
+  state.guests.waiting.forEach(guest => {
+    if (guest.sneakUntil && !isSneaking(guest)) {
+      guest.sneakUntil = null;
+      sneakEndView(guest);
+    }
+  });
+}
+
+// Тапнули по недоброжелателю в лобби — прогнали
+function shooGuest(guest) {
+  const g = state.guests;
+  if (!isSneaky(guest) || !g.waiting.includes(guest)) return;   // уже в кабинке или ушёл
+  g.waiting = g.waiting.filter(x => x !== guest);
+  shooView(guest);
+  sfx('whoosh');
+  showFloorPopView(1, t('vis.shooed'), 'good');
+  const s = CONFIG.guests.special[guest.special];
+  chatSay(guest.special === 'thief' ? 'visShooedThief' : 'visShooedGlutton',
+          { name: `${s.icon} ${t('vis.' + guest.special)}`, breed: guest.breed });
+  updateCabReadyView();
+}
+
+
+// ---------- Как это выглядит ----------
+
+// Крутится у входа: ходит туда-сюда возле дверей
+function sneakWalkView(el) {
+  if (!el.isConnected || !el.classList.contains('sneaking')) return;
+  const from = parseFloat(el.style.left) || 50;
+  const to = 38 + Math.random() * 24;                       // двери — посередине лобби
+  el.dataset.pose = 'walk';
+  el.dataset.dir = to < from ? 'left' : 'right';
+  el.style.transition = 'left 1.6s linear';
+  el.style.left = to + '%';
+  setTimeout(() => sneakWalkView(el), 1700);
+}
+
+// Время вышло: встаёт в очередь к лифту
+function sneakEndView(guest) {
+  const el = lobbyEl().querySelector(`.guest[data-guest="${guest.id}"]`);
+  if (!el) return;
+  el.classList.remove('sneaking');
+  el.style.transition = '';
+  el.dataset.pose = 'sit';
+  el.dataset.dir = 'left';
+  layoutQueue();
+}
+
+// Прогнали: убегает к дверям и тает
+function shooView(guest) {
+  const el = lobbyEl().querySelector(`.guest[data-guest="${guest.id}"]`);
+  if (!el) return;
+  el.classList.remove('sneaking', 'shooable');
+  const b = el.querySelector('.bubble');
+  if (b) b.textContent = '💨';
+  el.dataset.pose = 'walk';
+  el.dataset.dir = 'right';
+  el.style.transition = 'left 0.8s ease-in, opacity 0.8s';
+  el.style.left = '62%';
+  el.style.opacity = '0';
+  setTimeout(() => { el.remove(); layoutQueue(); }, 800);
 }

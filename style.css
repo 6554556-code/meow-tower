@@ -1222,3 +1222,9 @@ body {
 
 /* Случайные посетители: потеря (воришка, обжора) — красным */
 .collect-pop.loss { color: #ff6b6b; }
+/* Недоброжелатель у входа: его можно прогнать тапом */
+.cat.guest.shooable { pointer-events: auto; cursor: pointer; z-index: 3; }   /* обычные коты «пропускают» тапы, этот — нет */
+.cat.guest.shooable::before { content: ''; position: absolute; inset: -12px -8px; }  /* зона тапа больше кота — легче попасть пальцем */
+.cat.guest.sneaking .bubble { animation: intruder-blink 0.8s ease-in-out infinite; }
+@keyframes intruder-blink { 50% { box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.85); } }
+.collect-pop.good { color: #a7f070; }

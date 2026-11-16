@@ -52,6 +52,9 @@ const CHAT_LINES = {
     'Я тут немножко перекусил: {items}. Запишите на счёт соседа 😋'
   ],
   visGluttonEmpty: ['Пришёл покушать, а полки пустые… Обидно 🐷'],
+  visIntruder: ['Тревога! К нам хочет проникнуть недоброжелатель {icon} Он крутится у входа — тапни по нему, чтобы прогнать!'],
+  visShooedThief: ['Эх, заметили… Ладно, в другой раз 😼', 'Да я просто мимо проходил! 🦹'],
+  visShooedGlutton: ['Ну и ладно, пообедаю в другой башне 🐷', 'Я только понюхать хотел… 🐷'],
   vip: [
     'Хм, неплохой люкс. Я остаюсь 👑',
     'Шампанское… то есть сливки в номер, пожалуйста 👑'
@@ -191,7 +194,8 @@ function chatSay(kind, r, vars = {}, go = null) {
 
   const important = ['leave', 'outOfStock', 'warn', 'eventOrder', 'eventSale', 'eventInspection',
                      'eventOrderOk', 'eventOrderFail', 'eventInspectionOk', 'eventInspectionFail',
-                     'visTipper', 'visTipperFish', 'visThief', 'visThiefEmpty', 'visGlutton', 'visGluttonEmpty'];
+                     'visTipper', 'visTipperFish', 'visThief', 'visThiefEmpty', 'visGlutton', 'visGluttonEmpty',
+                     'visIntruder'];
   if (important.includes(kind)) showToastView(r, text, go);   // важное — всплывашкой
   refreshChatModal();
 }
@@ -238,7 +242,7 @@ function chatGo(go) {
     openResident(r.id);
   } else {
     scrollToFloor(go.floor);
-    openShop(go.floor);
+    if (go.floor !== 1) openShop(go.floor);              // лобби — просто показываем
   }
 }
 

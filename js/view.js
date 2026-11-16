@@ -393,7 +393,7 @@ function guestLeavesView(guest) {
 // Кабинка мигает, когда в лобби ждёт гость и можно сажать
 function updateCabReadyView() {
   const g = state.guests;
-  const ready = state.lift.floor === 1 && !state.lift.moving && !g.inCab && g.waiting.length > 0;
+  const ready = state.lift.floor === 1 && !state.lift.moving && !g.inCab && g.waiting.some(x => !isSneaking(x));
   cabEl.classList.toggle('ready', ready);
 }
 
@@ -421,12 +421,21 @@ function addGuestView(guest) {
   el.dataset.dir = 'left';            // смотрит на лифт
   el.insertAdjacentHTML('beforeend', bubbleHTML(guest));
   lobbyEl().appendChild(el);
+  if (isSneaky(guest)) {                          // воришку и обжору можно прогнать тапом, пока они в лобби
+    el.classList.add('shooable');
+    el.addEventListener('click', e => { e.stopPropagation(); shooGuest(guest); });
+  }
+  if (guest.sneakUntil) {
+    el.classList.add('sneaking');
+    el.style.left = '50%';
+    sneakWalkView(el);
+  }
   layoutQueue();
 }
 
 // Расставить очередь: первый — ближе всех к лифту. Облачка через одно выше, чтобы не налезали
 function layoutQueue() {
-  state.guests.waiting.forEach((guest, i) => {
+  state.guests.waiting.filter(x => !isSneaking(x)).forEach((guest, i) => {   // кто крутится у входа — не в очереди
     const el = lobbyEl().querySelector(`.guest[data-guest="${guest.id}"]`);
     if (!el) return;
     el.style.left = (2 + i * 15) + '%';

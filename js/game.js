@@ -553,7 +553,10 @@ function revalidateGuests() {
     const dest = randomItem(pool);
     guest.dest = dest.num;
     if (!same.length) { guest.vip = false; guest.resident = kindOf(dest) === 'living'; }
-    if (kindOf(dest) !== 'work') guest.special = null;   // особые гости — только в магазины
+    if (kindOf(dest) !== 'work' && guest.special) {      // особые гости — только в магазины
+      guest.special = null;
+      if (guest.sneakUntil) { guest.sneakUntil = null; sneakEndView(guest); }
+    }
     updateGuestBubbleView(guest);
   });
 }
@@ -585,8 +588,10 @@ function spawnGuest() {
     special: !isVip && kindOf(dest) === 'work' ? rollSpecial() : null,   // щедрый / воришка / обжора (visitors.js)
     waited: 0                                       // сколько секунд игры ждёт лифт (терпение)
   };
+  prepareSpecial(guest);                          // недоброжелатель сначала крутится у входа (visitors.js)
   g.waiting.push(guest);
   addGuestView(guest);
+  if (guest.sneakUntil) warnIntruder(guest);
   g.nextAt = Date.now() + guestInterval() * 1000;
   return true;
 }
@@ -596,9 +601,11 @@ function boardGuest() {
   const g = state.guests;
   const lift = state.lift;
   if (lift.moving || lift.floor !== 1) return;   // кабинка должна стоять в лобби
-  if (g.inCab || !g.waiting.length) return;     // уже занята или никого нет
+  if (g.inCab) return;                          // уже занята
+  const i = g.waiting.findIndex(x => !isSneaking(x));   // первый в очереди (недоброжелатель у входа не в счёт)
+  if (i < 0) return;                            // никого нет
 
-  const guest = g.waiting.shift();
+  const guest = g.waiting.splice(i, 1)[0];
   g.inCab = guest;
   boardView(guest);
 
@@ -734,7 +741,8 @@ function tick() {
 
   // Автопосадка: кабинка стоит в лобби, гость ждёт — через полсекунды заходит сам
   const lift = state.lift;
-  const canBoard = lift.floor === 1 && !lift.moving && !g.inCab && g.waiting.length > 0;
+  sneakTick();                        // недоброжелатели у входа: время вышло — встают в очередь
+  const canBoard = lift.floor === 1 && !lift.moving && !g.inCab && g.waiting.some(x => !isSneaking(x));
   if (!canBoard) lift.boardAt = null;
   else if (!lift.boardAt) lift.boardAt = now + CONFIG.lift.boardDelay * 1000;
   else if (now >= lift.boardAt) { lift.boardAt = null; boardGuest(); }
