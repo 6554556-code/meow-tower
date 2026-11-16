@@ -52,7 +52,7 @@ function specialVisit(guest, num) {
     if (coins > 0) {
       state.coins -= coins;
       showLossView(num, `−${fmtNum(coins)} ${COIN}`);
-      sfx('sad');
+      sfx('alarm');
       chatSay('visThief', who, { coins: fmtNum(coins) }, go);
     } else {
       chatSay('visThiefEmpty', who, {}, go);                 // в кошельке пусто — нечего красть
@@ -78,7 +78,7 @@ function specialVisit(guest, num) {
     const list = Object.entries(eaten).map(([slot, n]) => `«${productsOf(f)[slot].name}» ×${n}`).join(', ');
     if (list) {
       showLossView(num, `−${Object.values(eaten).reduce((a, b) => a + b, 0)} 📦`);
-      sfx('sad');
+      sfx('alarm');
       chatSay('visGlutton', who, { items: list }, go);
     } else {
       chatSay('visGluttonEmpty', who, {}, go);               // пока ехал, всё раскупили
@@ -120,6 +120,7 @@ function prepareSpecial(guest) {
 
 // Консьерж поднимает тревогу (в чат и всплывашкой; тап по ней — к лобби)
 function warnIntruder(guest) {
+  sfx('siren');
   chatSay('visIntruder', { name: t('vis.concierge'), breed: 'concierge' }, { icon: specialIcon(guest) }, { floor: 1 });
 }
 
