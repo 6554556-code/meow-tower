@@ -728,6 +728,7 @@ body {
 
 .product-side {
   flex: none;
+  width: 132px;          /* постоянная ширина: полоска товара не прыгает от «+ дозаказ» и таймера */
   display: flex;
   flex-direction: column;
   align-items: flex-end;

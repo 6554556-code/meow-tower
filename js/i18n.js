@@ -184,7 +184,7 @@ const I18N = {
 
     'shop.noWorker': 'no worker',
     'shop.notSold': 'not on sale',
-    'shop.credit': 'on credit',
+    'shop.credit': 'credit',
     'shop.onSale': 'on sale',
     'shop.topup': '+ restock',
     'shop.workers': 'Workers: {n}/{max} · 1 cat = 1 item',
