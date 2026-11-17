@@ -1,0 +1,29 @@
+/* Стиль страниц privacy.html и support.html (для App Store) — в цветах игры */
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('assets/fonts/press-start-2p-latin-400-normal.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+2000-206F;
+}
+@font-face {
+  font-family: 'Press Start 2P';
+  src: url('assets/fonts/press-start-2p-cyrillic-400-normal.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+2116;
+}
+
+body {
+  margin: 0;
+  background: #1b1838;
+  color: #f3eefc;
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.page { max-width: 680px; margin: 0 auto; padding: 24px 18px 48px; }
+.sign { display: block; width: min(320px, 80%); margin: 0 auto 8px; image-rendering: pixelated; }
+.langs { text-align: center; margin-bottom: 24px; }
+h1, h2 { font-family: 'Press Start 2P', monospace; line-height: 1.5; }
+h1 { font-size: 18px; color: #ffd166; margin: 32px 0 6px; }
+h2 { font-size: 12px; color: #a7f070; margin: 26px 0 6px; }
+.date { color: #a9a3c7; font-size: 14px; margin-top: 0; }
+.mail { font-size: 20px; }
+a { color: #7fd3ff; }
+section + section { border-top: 2px dashed #3d3770; margin-top: 40px; }
+footer { margin-top: 48px; text-align: center; font-size: 14px; }
