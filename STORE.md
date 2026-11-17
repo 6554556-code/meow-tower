@@ -49,7 +49,7 @@
 
 ## 🇬🇧 English (U.S.)
 
-**Name** (30): `Meow Tower: Cat Hotel`  _(«Meow Tower» занято)_
+**Name** (30): `Meow Tower: Pixel Cat Hotel`  _(«Meow Tower» занято)_
 
 **Subtitle** (30): `Cozy pixel tycoon sim`
 
@@ -105,3 +105,10 @@ Cats chat in the Meow Chat, cheer when they get their dream job and get grumpy i
 | Авторские права | © 2026 Irina Ivanova |
 | SKU | MeowTower |
 | Bundle ID | com.BGGames.MeowTower |
+
+---
+
+## Видео-превью (App Preview)
+
+- iPhone 6.9": **886×1920**, 15–30 с, 30 к/с, H.264, звук AAC стерео
+- Файл: `meow_tower_app_preview_886x1920.mp4` (24 с) — по бокам сверху/снизу размытая копия кадра
