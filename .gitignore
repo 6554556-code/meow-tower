@@ -2,3 +2,4 @@
 server/.env
 data/
 node_modules/
+www/

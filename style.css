@@ -1251,3 +1251,14 @@ body {
 .toast     { top: calc(56px + env(safe-area-inset-top)); }
 .to-lift   { bottom: calc(96px + env(safe-area-inset-bottom)); }
 .modal     { padding-top: calc(16px + env(safe-area-inset-top)); padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+
+/* Как в приложении: долгий тап не выделяет текст и не показывает меню «Скопировать/Сохранить картинку»,
+   нет серой вспышки при тапе (поля ввода не трогаем) */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+img { -webkit-user-drag: none; }
+input, textarea { -webkit-user-select: text; user-select: text; }

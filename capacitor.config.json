@@ -1,0 +1,11 @@
+{
+  "appId": "com.BGGames.MeowTower",
+  "appName": "Meow Tower",
+  "webDir": "www",
+  "backgroundColor": "#1b1838",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#1b1838",
+    "scrollEnabled": true
+  }
+}

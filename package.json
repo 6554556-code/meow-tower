@@ -1,0 +1,19 @@
+{
+  "name": "meow-tower",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Мяу Башня / Meow Tower — пиксельный отель для котов",
+  "scripts": {
+    "build": "node scripts/copy-web.js",
+    "ios": "npm run build && npx cap sync ios && npx cap open ios",
+    "sync": "npm run build && npx cap sync"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.6.2",
+    "@capacitor/ios": "^8.6.2",
+    "@capacitor/preferences": "^8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.2"
+  }
+}

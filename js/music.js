@@ -9,6 +9,9 @@
 //    музыки из кода не меняется. Нужно громче/тише — пересобираем файл.
 // =====================================================
 
+// Звук как у игр (айфон): уважает беззвучный режим и не глушит музыку из других приложений
+if (navigator.audioSession) try { navigator.audioSession.type = 'ambient'; } catch (e) { /* старый браузер */ }
+
 const music = new Audio('assets/music/theme.mp3');
 music.loop = true;
 music.preload = 'auto';
