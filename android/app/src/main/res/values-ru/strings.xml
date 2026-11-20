@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!-- Название под иконкой на телефонах с русским языком. На остальных — values/strings.xml (Meow Tower) -->
+<resources>
+    <string name="app_name">Мяу Башня</string>
+    <string name="title_activity_main">Мяу Башня</string>
+</resources>

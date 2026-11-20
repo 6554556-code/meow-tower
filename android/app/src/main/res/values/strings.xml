@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Meow Tower</string>
+    <string name="title_activity_main">Meow Tower</string>
+    <string name="package_name">com.BGGames.MeowTower</string>
+    <string name="custom_url_scheme">com.BGGames.MeowTower</string>
+</resources>
